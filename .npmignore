@@ -1,0 +1,6 @@
+/fixtures/
+/__tests__/
+/.github/
+/.eslintrc.yml
+/.eslintignore
+/Makefile

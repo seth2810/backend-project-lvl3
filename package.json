@@ -1,0 +1,52 @@
+{
+  "name": "backend-project-lvl3",
+  "version": "0.0.1",
+  "description": "pages loader project",
+  "main": "src/cli.js",
+  "bin": {
+    "page-loader": "bin/page-loader.js"
+  },
+  "engines": {
+    "node": ">=13"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "npx -n --experimental-vm-modules jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seth2810/backend-project-lvl3.git"
+  },
+  "keywords": [
+    "http",
+    "page",
+    "loader",
+    "local"
+  ],
+  "author": "seth2810",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seth2810/backend-project-lvl3/issues"
+  },
+  "homepage": "https://github.com/seth2810/backend-project-lvl3#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "commander": "^5.1.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-jest": "^23.13.2",
+    "jest": "^26.0.1",
+    "nock": "^13.0.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/__tests__/helpers"
+    ]
+  }
+}
