@@ -31,6 +31,7 @@
   "homepage": "https://github.com/seth2810/backend-project-lvl3#readme",
   "dependencies": {
     "axios": "^0.19.2",
+    "cheerio": "^1.0.0-rc.3",
     "commander": "^5.1.0"
   },
   "devDependencies": {
