@@ -3,6 +3,13 @@ import { URL } from 'url';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { promises as fs } from 'fs';
+import axiosDebugLog from 'axios-debug-log';
+
+import logger from './logger.js';
+
+const client = axios.create();
+
+axiosDebugLog.addLogger(client, logger);
 
 const getUrlAddress = (url) => url.substr(url.indexOf('//') + 2);
 
@@ -32,7 +39,7 @@ const getResourceUrlAttrubute = (tag) => {
 };
 
 const requestUrl = (url) => {
-  const request = axios.get(url, { responseType: 'arraybuffer' });
+  const request = client.get(url, { responseType: 'arraybuffer' });
 
   return request.then(({ data }) => data);
 };
@@ -87,6 +94,8 @@ const downloadResources = (resourcesPaths, baseUrl, outputDir) => {
     const resourceUrl = new URL(resourcePath, baseUrl);
     const resourceFilePath = path.join(outputDir, convertResourceUrlToFileName(resourcePath));
 
+    logger('download asset "%s" to "%s"', resourcePath, resourceFilePath);
+
     return downloadFile(resourceUrl.href, resourceFilePath);
   });
 
@@ -100,6 +109,9 @@ const downloadPage = (pageUrl, outputPath) => {
   const resourcesDirPath = path.join(outputPath, resourcesDir);
   const pageFilePath = path.join(outputPath, `${pageFileName}.html`);
 
+  logger('load page', pageUrl);
+  logger('output path', outputPath);
+
   return requestUrl(pageUrl)
     .then((data) => data.toString('utf-8'))
     .then((html) => {
@@ -109,8 +121,14 @@ const downloadPage = (pageUrl, outputPath) => {
       );
       const modifiedHtml = modifyResourcesPaths(html, relativeResourcesUrls, resourcesDir);
 
+      logger('save page file', pageFilePath);
+
       return fs.appendFile(pageFilePath, modifiedHtml)
-        .then(() => fs.mkdir(resourcesDirPath))
+        .then(() => {
+          logger('create assets directory', resourcesDirPath);
+
+          return fs.mkdir(resourcesDirPath);
+        })
         .then(() => downloadResources(relativeResourcesUrls, pageUrl, resourcesDirPath));
     });
 };

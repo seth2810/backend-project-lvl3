@@ -31,8 +31,10 @@
   "homepage": "https://github.com/seth2810/backend-project-lvl3#readme",
   "dependencies": {
     "axios": "^0.19.2",
+    "axios-debug-log": "^0.8.0",
     "cheerio": "^1.0.0-rc.3",
-    "commander": "^5.1.0"
+    "commander": "^5.1.0",
+    "debug": "^4.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

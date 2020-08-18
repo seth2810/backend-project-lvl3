@@ -8,7 +8,7 @@ lint:
 	npx eslint .
 
 test:
-	npm test
+	DEBUG=nock.scope*,page-loader npm test
 
 test-coverage:
 	npm test -- --coverage --coverageProvider=v8
