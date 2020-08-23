@@ -1,4 +1,5 @@
 import path from 'path';
+import Listr from 'listr';
 import { URL } from 'url';
 import axios from 'axios';
 import cheerio from 'cheerio';
@@ -42,7 +43,7 @@ const requestUrl = (url) => {
   const request = client.get(url, { responseType: 'arraybuffer' });
 
   return request.then(({ data }) => data).catch((error) => {
-    throw new Error(`RequestError: ${error.message} (${url})`);
+    throw new Error(`${error.message} (${url})`);
   });
 };
 
@@ -92,16 +93,21 @@ const downloadFile = (url, outputPath) => requestUrl(url)
   .then((data) => fs.appendFile(outputPath, data));
 
 const downloadResources = (resourcesPaths, baseUrl, outputDir) => {
-  const promises = resourcesPaths.map((resourcePath) => {
+  const tasks = resourcesPaths.map((resourcePath) => {
     const resourceUrl = new URL(resourcePath, baseUrl);
     const resourceFilePath = path.join(outputDir, convertResourceUrlToFileName(resourcePath));
 
     logger('download asset "%s" to "%s"', resourcePath, resourceFilePath);
 
-    return downloadFile(resourceUrl.href, resourceFilePath);
+    return {
+      title: resourceUrl.toString(),
+      task: () => downloadFile(resourceUrl.href, resourceFilePath),
+    };
   });
 
-  return Promise.all(promises);
+  const listr = new Listr(tasks, { concurrent: true, exitOnError: false });
+
+  return listr.run();
 };
 
 const downloadPage = (pageUrl, outputPath) => {

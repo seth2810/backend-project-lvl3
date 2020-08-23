@@ -34,7 +34,8 @@
     "axios-debug-log": "^0.8.0",
     "cheerio": "^1.0.0-rc.3",
     "commander": "^5.1.0",
-    "debug": "^4.1.1"
+    "debug": "^4.1.1",
+    "listr": "^0.14.3"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

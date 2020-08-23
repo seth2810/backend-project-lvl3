@@ -77,7 +77,7 @@ describe('page-loader', () => {
     nock(pageUrl).get('/').reply(404);
 
     await expect(downloadPage(pageUrl, outputDir)).rejects.toThrow(
-      `RequestError: Request failed with status code 404 (${pageUrl})`,
+      `Request failed with status code 404 (${pageUrl})`,
     );
   });
 
@@ -104,8 +104,17 @@ describe('page-loader', () => {
       }
     });
 
-    await expect(downloadPage(pageUrl, outputDir)).rejects.toThrow(
-      `RequestError: Request failed with status code 404 (${pageUrl}${lastEntryPath})`,
-    );
+    expect.assertions(3);
+
+    try {
+      await downloadPage(pageUrl, outputDir);
+    } catch (error) {
+      expect(error.toString()).toMatch('ListrError: Something went wrong');
+      expect(error.errors).toHaveLength(1);
+
+      const [assetError] = error.errors;
+
+      expect(assetError.toString()).toMatch(`Request failed with status code 404 (${pageUrl}${lastEntryPath})`);
+    }
   });
 });
