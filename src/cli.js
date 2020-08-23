@@ -19,7 +19,14 @@ const runCli = () => {
     .option('-o, --output [directory]', 'output directory', defaultOutputPath)
     .arguments('<url>')
     .action((url) => {
-      downloadPage(url, program.output);
+      downloadPage(url, program.output)
+        .then((pageFilePath) => {
+          console.log(`Page successfully saved into '${pageFilePath}'`);
+        })
+        .catch((error) => {
+          console.error(error.message);
+          process.exit(1);
+        });
     });
 
   program.parse(process.argv);

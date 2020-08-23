@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`page-loader basic should download page file 1`] = `
+exports[`page-loader should download page assets 1`] = `
 "<!DOCTYPE html><html><head>
     <title>Example Domain</title>
     <meta charset=\\"utf-8\\">
@@ -25,6 +25,32 @@ exports[`page-loader basic should download page file 1`] = `
       </p>
     </div>
     <script src=\\"ru-hexlet-io_files/assets-script.js\\"></script>
+  
+
+</body></html>"
+`;
+
+exports[`page-loader should download page file 1`] = `
+"<!DOCTYPE html><html><head>
+    <title>Example Domain</title>
+    <meta charset=\\"utf-8\\">
+    <meta http-equiv=\\"Content-type\\" content=\\"text/html; charset=utf-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <link href=\\"/courses\\" rel=\\"canonical\\">
+  </head>
+
+  <body>
+    <div>
+      <h1>Example Domain</h1>
+      <p>
+        This domain is for use in illustrative examples in documents. You may
+        use this domain in literature without prior coordination or asking for
+        permission.
+      </p>
+      <p>
+        <a href=\\"https://www.iana.org/domains/example\\">More information...</a>
+      </p>
+    </div>
   
 
 </body></html>"

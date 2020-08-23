@@ -41,7 +41,9 @@ const getResourceUrlAttrubute = (tag) => {
 const requestUrl = (url) => {
   const request = client.get(url, { responseType: 'arraybuffer' });
 
-  return request.then(({ data }) => data);
+  return request.then(({ data }) => data).catch((error) => {
+    throw new Error(`RequestError: ${error.message} (${url})`);
+  });
 };
 
 const extractResourcesUrls = (html) => {
@@ -127,10 +129,12 @@ const downloadPage = (pageUrl, outputPath) => {
         .then(() => {
           logger('create assets directory', resourcesDirPath);
 
-          return fs.mkdir(resourcesDirPath);
+          return fs.access(resourcesDirPath)
+            .catch(() => fs.mkdir(resourcesDirPath));
         })
         .then(() => downloadResources(relativeResourcesUrls, pageUrl, resourcesDirPath));
-    });
+    })
+    .then(() => pageFilePath);
 };
 
 export default downloadPage;
