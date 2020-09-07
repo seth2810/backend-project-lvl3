@@ -55,3 +55,9 @@ exports[`page-loader should download page file 1`] = `
 
 </body></html>"
 `;
+
+exports[`page-loader throws error when output path not exists 1`] = `"ENOENT: no such file or directory, open '/notexitst/ru-hexlet-io.html'"`;
+
+exports[`page-loader throws error when page unavailable 1`] = `"Request failed with status code 404 (https://ru.hexlet.io)"`;
+
+exports[`page-loader throws on network errors 1`] = `"Nock: Disallowed net connect for \\"ru.hexlet.io:443/\\" (https://ru.hexlet.io)"`;
