@@ -1,91 +1,104 @@
+import os from 'os';
 import path from 'path';
+import url, { URL } from 'url';
 import { promises as fs } from 'fs';
 
 import nock from 'nock';
 
 import downloadPage from '../index.js';
 
-import * as helpers from './helpers/index.js';
+const currentFilePath = url.fileURLToPath(import.meta.url);
+const currentDirectory = path.dirname(currentFilePath);
+
+const makeOutputDir = () => fs.mkdtemp(path.join(os.tmpdir(), 'page-loader'));
+
+const getFixturePath = (relativePath) => path.resolve(currentDirectory, '..', '__fixtures__', relativePath);
+
+const readFile = (filePath) => fs.readFile(filePath, 'utf-8');
+
+const pagePath = '/courses';
+const pageOrigin = 'https://ru.hexlet.io';
+const pageFileName = 'ru-hexlet-io-courses';
+const pageResourcesDir = `${pageFileName}_files`;
+const pageUrl = new URL(pagePath, pageOrigin);
+const resourcesTable = [
+  ['/courses', path.join(pageResourcesDir, 'ru-hexlet-io-courses.html')],
+  ['/assets/application.css', path.join(pageResourcesDir, 'ru-hexlet-io-assets-application.css')],
+  ['/assets/professions/nodejs.png', path.join(pageResourcesDir, 'ru-hexlet-io-assets-professions-nodejs.png')],
+  ['/packs/js/runtime.js', path.join(pageResourcesDir, 'ru-hexlet-io-packs-js-runtime.js')],
+];
+
+nock.disableNetConnect();
 
 describe('page-loader', () => {
-  const pageFileName = 'ru-hexlet-io';
-  const pageUrl = 'https://ru.hexlet.io';
+  const server = nock(pageOrigin).persist();
 
-  beforeAll(() => {
-    nock.disableNetConnect();
+  describe('errors', () => {
+    let outputDir;
+
+    beforeAll(async () => {
+      outputDir = await makeOutputDir();
+
+      resourcesTable.forEach(([resourceUrl, resourcePath]) => {
+        server.get(resourceUrl).replyWithFile(200, getFixturePath(resourcePath));
+      });
+    });
+
+    it('throws on network errors', async () => {
+      const downloadUrl = new URL('/network_error', pageOrigin);
+      const expectedError = 'NetworkError: A network error occurred';
+
+      server.get(downloadUrl.pathname).replyWithError(expectedError);
+
+      await expect(downloadPage(downloadUrl.toString(), outputDir))
+        .rejects.toThrowErrorMatchingInlineSnapshot(
+          JSON.stringify(expectedError),
+        );
+    });
+
+    it.each([400, 500])('throws when resource loading fails with status code %d', async (status) => {
+      const downloadUrl = new URL(`/error_${status}`, pageOrigin);
+      const expectedError = `Request failed with status code ${status}`;
+
+      server.get(downloadUrl.pathname).reply(status);
+
+      await expect(downloadPage(downloadUrl.toString(), outputDir))
+        .rejects.toThrowErrorMatchingInlineSnapshot(
+          JSON.stringify(expectedError),
+        );
+    });
+
+    it('throws on file system errors', async () => {
+      await expect(downloadPage(pageUrl.href, '/var/lib')).rejects.toThrow(/EACCES: permission denied/);
+      await expect(downloadPage(pageUrl.href, '/notexitst')).rejects.toThrow(/ENOENT: no such file or directory/);
+      await expect(downloadPage(pageUrl.href, currentFilePath)).rejects.toThrow(
+        /ENOTDIR: not a directory/,
+      );
+    });
   });
 
-  beforeEach(async () => {
-    nock.cleanAll();
-  });
+  describe('success', () => {
+    let outputDir;
 
-  it('should download page file', async () => {
-    const outputDir = await helpers.makeOutputDir();
+    beforeAll(async () => {
+      outputDir = await makeOutputDir();
 
-    nock(pageUrl).get('/').replyWithFile(200, helpers.resolveFixturePath('basic.html'));
+      await downloadPage(pageUrl.toString(), outputDir);
+    });
 
-    await downloadPage(pageUrl, outputDir);
+    it('should download page', async () => {
+      const actualFilePath = path.join(outputDir, `${pageFileName}.html`);
+      const expectedContent = await readFile(getFixturePath(`${pageFileName}.html`));
 
-    await expect(fs.readFile(path.join(outputDir, `${pageFileName}.html`), 'utf-8')).resolves.toMatchSnapshot();
-  });
+      await expect(readFile(actualFilePath)).resolves.toBe(expectedContent);
+    });
 
-  it('should download page assets', async () => {
-    const outputDir = await helpers.makeOutputDir();
+    it.each(resourcesTable)('should download resource "%s"', async (...args) => {
+      const [, resourcePath] = args;
+      const actualFilePath = path.join(outputDir, resourcePath);
+      const expectedContent = await readFile(getFixturePath(resourcePath));
 
-    nock(pageUrl).get('/').replyWithFile(200, helpers.resolveFixturePath('assets.html'));
-
-    nock(pageUrl).get('/assets/style.css').replyWithFile(200, helpers.resolveFixturePath('assets/style.css'));
-    nock(pageUrl).get('/assets/image.jpg').replyWithFile(200, helpers.resolveFixturePath('assets/image.jpg'));
-    nock(pageUrl).get('/assets/script.js').replyWithFile(200, helpers.resolveFixturePath('assets/script.js'));
-
-    await downloadPage(pageUrl, outputDir);
-
-    await expect(fs.readFile(path.join(outputDir, `${pageFileName}.html`), 'utf-8')).resolves.toMatchSnapshot();
-
-    await expect(
-      fs.readFile(path.join(outputDir, `${pageFileName}_files`, 'assets-style.css'), 'utf-8'),
-    ).resolves.toBe(await fs.readFile(helpers.resolveFixturePath('assets/style.css'), 'utf-8'));
-
-    await expect(
-      fs.readFile(path.join(outputDir, `${pageFileName}_files`, 'assets-image.jpg'), 'utf-8'),
-    ).resolves.toBe(await fs.readFile(helpers.resolveFixturePath('assets/image.jpg'), 'utf-8'));
-
-    await expect(
-      fs.readFile(path.join(outputDir, `${pageFileName}_files`, 'assets-script.js'), 'utf-8'),
-    ).resolves.toBe(await fs.readFile(helpers.resolveFixturePath('assets/script.js'), 'utf-8'));
-  });
-
-  it('throws on network errors', async () => {
-    const outputDir = await helpers.makeOutputDir();
-
-    await expect(downloadPage(pageUrl, outputDir)).rejects.toThrowErrorMatchingSnapshot();
-  });
-
-  it('throws error when page unavailable', async () => {
-    const outputDir = await helpers.makeOutputDir();
-
-    nock(pageUrl).get('/').reply(404);
-
-    await expect(downloadPage(pageUrl, outputDir)).rejects.toThrowErrorMatchingSnapshot();
-  });
-
-  it('throws error when output path not exists', async () => {
-    const outputDir = '/notexitst';
-
-    nock(pageUrl).get('/').replyWithFile(200, helpers.resolveFixturePath('basic.html'));
-
-    await expect(downloadPage(pageUrl, outputDir)).rejects.toThrowErrorMatchingSnapshot();
-  });
-
-  it('throws error when asset not available', async () => {
-    const outputDir = await helpers.makeOutputDir();
-
-    nock(pageUrl).get('/').replyWithFile(200, helpers.resolveFixturePath('assets.html'));
-
-    nock(pageUrl).get('/assets/style.css').reply(404);
-    nock(pageUrl).get('/assets/image.jpg').replyWithFile(200, helpers.resolveFixturePath('assets/image.jpg'));
-    nock(pageUrl).get('/assets/script.js').replyWithFile(200, helpers.resolveFixturePath('assets/script.js'));
-
-    await expect(downloadPage(pageUrl, outputDir)).rejects.toThrow();
+      await expect(readFile(actualFilePath)).resolves.toBe(expectedContent);
+    });
   });
 });
