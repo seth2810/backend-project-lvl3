@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 
 import nock from 'nock';
 
-import downloadPage from '../src/index.js';
+import downloadPage from '../index.js';
 
 import * as helpers from './helpers/index.js';
 
