@@ -1,16 +1,17 @@
 import path from 'path';
 import Listr from 'listr';
+import debug from 'debug';
 import { URL } from 'url';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { promises as fs } from 'fs';
 import axiosDebugLog from 'axios-debug-log';
 
-import logger from './logger.js';
-
 const client = axios.create();
 
-axiosDebugLog.addLogger(client, logger);
+const log = debug('page-loader');
+
+axiosDebugLog.addLogger(client, log);
 
 const getUrlAddress = (url) => url.substr(url.indexOf('//') + 2);
 
@@ -97,7 +98,7 @@ const downloadResources = (resourcesPaths, baseUrl, outputDir) => {
     const resourceUrl = new URL(resourcePath, baseUrl);
     const resourceFilePath = path.join(outputDir, convertResourceUrlToFileName(resourcePath));
 
-    logger('download asset "%s" to "%s"', resourcePath, resourceFilePath);
+    log('download asset "%s" to "%s"', resourcePath, resourceFilePath);
 
     return {
       title: resourceUrl.toString(),
@@ -117,8 +118,8 @@ const downloadPage = (pageUrl, outputPath) => {
   const resourcesDirPath = path.join(outputPath, resourcesDir);
   const pageFilePath = path.join(outputPath, `${pageFileName}.html`);
 
-  logger('load page', pageUrl);
-  logger('output path', outputPath);
+  log('load page', pageUrl);
+  log('output path', outputPath);
 
   return requestUrl(pageUrl)
     .then((data) => data.toString('utf-8'))
@@ -129,11 +130,11 @@ const downloadPage = (pageUrl, outputPath) => {
       );
       const modifiedHtml = modifyResourcesPaths(html, relativeResourcesUrls, resourcesDir);
 
-      logger('save page file', pageFilePath);
+      log('save page file', pageFilePath);
 
       return fs.appendFile(pageFilePath, modifiedHtml)
         .then(() => {
-          logger('create assets directory', resourcesDirPath);
+          log('create assets directory', resourcesDirPath);
 
           return fs.access(resourcesDirPath)
             .catch(() => fs.mkdir(resourcesDirPath));
