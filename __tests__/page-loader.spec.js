@@ -7,12 +7,12 @@ import nock from 'nock';
 
 import downloadPage from '../index.js';
 
-const currentFilePath = url.fileURLToPath(import.meta.url);
-const currentDirectory = path.dirname(currentFilePath);
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const makeOutputDir = () => fs.mkdtemp(path.join(os.tmpdir(), 'page-loader'));
 
-const getFixturePath = (relativePath) => path.resolve(currentDirectory, '..', '__fixtures__', relativePath);
+const getFixturePath = (relativePath) => path.resolve(__dirname, '..', '__fixtures__', relativePath);
 
 const readFile = (filePath) => fs.readFile(filePath, 'utf-8');
 
@@ -71,7 +71,7 @@ describe('page-loader', () => {
     it('throws on file system errors', async () => {
       await expect(downloadPage(pageUrl.href, '/var/lib')).rejects.toThrow(/EACCES: permission denied/);
       await expect(downloadPage(pageUrl.href, '/notexitst')).rejects.toThrow(/ENOENT: no such file or directory/);
-      await expect(downloadPage(pageUrl.href, currentFilePath)).rejects.toThrow(
+      await expect(downloadPage(pageUrl.href, __filename)).rejects.toThrow(
         /ENOTDIR: not a directory/,
       );
     });
