@@ -1,5 +1,5 @@
 {
-  "name": "backend-project-lvl3",
+  "name": "@hexlet/code",
   "version": "0.0.1",
   "description": "pages loader project",
   "main": "src/cli.js",
@@ -31,19 +31,19 @@
   "homepage": "https://github.com/seth2810/backend-project-lvl3#readme",
   "dependencies": {
     "axios": "^0.19.2",
-    "axios-debug-log": "^0.8.0",
-    "cheerio": "^1.0.0-rc.3",
+    "axios-debug-log": "^0.8.2",
+    "cheerio": "^1.0.0-rc.10",
     "commander": "^5.1.0",
-    "debug": "^4.1.1",
+    "debug": "^4.3.1",
     "listr": "^0.14.3"
   },
   "devDependencies": {
-    "eslint": "^7.2.0",
-    "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-plugin-import": "^2.21.2",
-    "eslint-plugin-jest": "^23.13.2",
-    "jest": "^26.0.1",
-    "nock": "^13.0.2"
+    "eslint": "^7.29.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jest": "^23.20.0",
+    "jest": "^26.6.3",
+    "nock": "^13.1.0"
   },
   "jest": {
     "testEnvironment": "node",
