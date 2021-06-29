@@ -77,7 +77,7 @@ const downloadResource = (url, outputPath) => {
  5. create assets download tasks
  6. wrap tasks with listr
  */
-const downloadPage = (url, outputPath) => {
+export default (url, outputPath = '') => {
   const pageUrl = new URL(url);
   const pageFileName = slugifyUrl(pageUrl);
   const resourcesDirName = `${pageFileName}_files`;
@@ -115,5 +115,3 @@ const downloadPage = (url, outputPath) => {
     })
     .then(() => pageFilePath);
 };
-
-export default downloadPage;
